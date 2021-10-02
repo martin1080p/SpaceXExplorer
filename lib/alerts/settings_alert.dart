@@ -1,62 +1,66 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
-import 'package:space_x/controllers/limit_controller.dart';
+import 'package:space_x/controllers/settings_controller.dart';
+import 'package:space_x/managers/storage_manager.dart';
 
-class SettingsAlert extends StatelessWidget{
+// ignore: must_be_immutable
+class SettingsAlert extends StatelessWidget {
 
-  var limitController = Get.put(LimitController());
-  
+  SettingsController settingsController = Get.put(SettingsController());
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text("Settings"),
-      content: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            child: GetX<LimitController>(
-              builder: (controller) {
-                return Row(
+      content: GetX<SettingsController>(builder: (controller) {
+        return SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                child: Text(
+                  "Limit item count"
+                ),
+              ),
+              Container(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     IconButton(
                       icon: Icon(Icons.remove),
-                      onPressed: (){
-                        controller.itemCount--;
+                      onPressed: () {
+                        if(controller.limitItemCount.value > 1)
+                          controller.limitItemCount--;
                       },
                     ),
-                    Text(controller.itemCount.toString()),
+                    Text(controller.limitItemCount.toString()),
                     IconButton(
                       icon: Icon(Icons.add),
-                      onPressed: (){
-                        controller.itemCount++;
+                      onPressed: () {
+                        if(controller.limitItemCount.value < 50)
+                          controller.limitItemCount++;
                       },
                     )
                   ],
-                );
-              }
-            ),
-          )
-        ],
-      ),
+                ),
+              ),
+              Divider()
+            ],
+          ),
+        );
+      }),
       actions: [
         TextButton(
-          child: Text(
-            "Cancel"
-          ),
+          child: Text("Cancel"),
           onPressed: () {
-            limitController.itemCount.value =  GetStorage().read("item_limit");
+            settingsController.limitItemCount.value = StorageManager().read("item_limit");
             Navigator.pop(context, 'Cancel');
           },
         ),
         TextButton(
-          child: Text(
-            "Save"
-          ),
+          child: Text("Save"),
           onPressed: () {
-            GetStorage().write("item_limit", limitController.itemCount.value);
-            print(GetStorage().read("item_limit"));
+            StorageManager().write("item_limit", settingsController.limitItemCount.value);
             Navigator.pop(context, 'Save');
           },
         )
