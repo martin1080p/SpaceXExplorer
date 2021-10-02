@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:space_x/alerts/settings_alert.dart';
 import 'package:space_x/alerts/sort_alert.dart';
 import 'package:space_x/controllers/main_page_controller.dart';
+import 'package:space_x/requests/api_requests.dart';
 import 'package:space_x/managers/storage_manager.dart';
 
 // ignore: must_be_immutable
@@ -13,19 +14,33 @@ class MainPage extends StatelessWidget {
 
   MainPageController mainPageController = Get.put(MainPageController());
 
+  SpaceXRequest request = SpaceXRequest();
+
   @override
   Widget build(BuildContext context) {
     return GetX<MainPageController>(
       builder: (controller) {
         return Scaffold(
           appBar: controller.inSearching.value ? _appBarSearch(context) : _appBarIdle(context, this.title),
-          body: Center(
+          body: Container(
+            alignment: Alignment.topCenter,
             child: SingleChildScrollView(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Text(
-                    '',
+                  FutureBuilder(
+                    future: request.basicRequest(
+                      0,
+                      controller.limitItemCount.value,
+                      controller.sortParameter.value,
+                      controller.sortDirection.value,
+                      controller.inSearching.value,
+                      controller.searchText.value
+                    ),
+                    builder: (BuildContext context, AsyncSnapshot snapshot){
+                      if(snapshot.connectionState == ConnectionState.done)
+                        return Text(snapshot.data);
+                      return CircularProgressIndicator();
+                    },
                   ),
                 ],
               ),
@@ -34,7 +49,7 @@ class MainPage extends StatelessWidget {
           floatingActionButton: FloatingActionButton(
             onPressed: () {
               //SpaceXRequest().searchRequest("crs 20");
-              print(StorageManager().read('item_limit'));
+              print(controller.inSearching.value);
             },
             child: Icon(Icons.add),
           ),

@@ -1,15 +1,47 @@
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 
 class SpaceXRequest{
 
-  searchRequest(String query) async{
-    Uri baseUrl = Uri.parse('https://api.spacexdata.com/v4/launches/query');
+  Uri baseUrl = Uri.parse('https://api.spacexdata.com/v4/launches/query');
 
-    var headers = <String, String>{
+  var headers = {
       'Content-Type': 'application/json; charset=UTF-8',
     };
+
+  basicRequest(int pageNum, int limit, String sortParameter, String sortDirection, bool isSearch, String searchQuery) async{
+    
+    var requestBody = {
+      'query' : {
+        'upcoming' : false,
+      },
+      'options' : {
+        'sort' : {
+          sortParameter : sortDirection
+        },
+        'limit' : limit,
+        'offset' : pageNum * limit
+      }
+    };
+    
+    
+    if(isSearch)
+      requestBody['query']?['\$text'] = {
+        '\$search': searchQuery
+      };
+
+    
+
+    var response = await http.post(
+      baseUrl,
+      headers: headers,
+      body : jsonEncode(requestBody)
+    );
+    
+    return jsonDecode(response.body).toString();
+  }
+
+  searchRequest(String query) async{
 
     var requestBody = jsonEncode({
       'query' : {
