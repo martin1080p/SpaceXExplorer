@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:space_x/alerts/settings_alert.dart';
 import 'package:space_x/alerts/sort_alert.dart';
-import 'package:space_x/controllers/main_page_controller.dart';
+import 'package:space_x/controllers/app_controller.dart';
+import 'package:space_x/elements/launch_view_list.dart';
 import 'package:space_x/requests/api_requests.dart';
 import 'package:space_x/managers/storage_manager.dart';
 
@@ -12,48 +13,32 @@ class MainPage extends StatelessWidget {
 
   MainPage(this.title);
 
-  MainPageController mainPageController = Get.put(MainPageController());
+  AppController appController = Get.put(AppController());
 
   SpaceXRequest request = SpaceXRequest();
 
   @override
   Widget build(BuildContext context) {
-    return GetX<MainPageController>(
-      builder: (controller) {
-        return Scaffold(
-          appBar: controller.inSearching.value ? _appBarSearch(context) : _appBarIdle(context, this.title),
-          body: Container(
-            alignment: Alignment.topCenter,
-            child: SingleChildScrollView(
-              child: Column(
-                children: <Widget>[
-                  FutureBuilder(
-                    future: request.basicRequest(
-                      0,
-                      controller.limitItemCount.value,
-                      controller.sortParameter.value,
-                      controller.sortDirection.value,
-                      controller.inSearching.value,
-                      controller.searchText.value
-                    ),
-                    builder: (BuildContext context, AsyncSnapshot snapshot){
-                      if(snapshot.connectionState == ConnectionState.done)
-                        return Text(snapshot.data);
-                      return CircularProgressIndicator();
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              //SpaceXRequest().searchRequest("crs 20");
-              print(controller.inSearching.value);
-            },
-            child: Icon(Icons.add),
-          ),
-        );
+    return OrientationBuilder(
+      builder: (context, orientation) {
+        return GetX<AppController>(builder: (controller) {
+          return Scaffold(
+                appBar: controller.inSearching.value ? _appBarSearch(context) : _appBarIdle(context, this.title),
+                body: Container(
+                  alignment: Alignment.topCenter,
+                  child: LaunchViewList(),
+                ),
+                floatingActionButton: FloatingActionButton(
+                  onPressed: () {
+                    //SpaceXRequest().searchRequest("crs 20");
+                    controller.loadNextPage();
+                    print("loaded next page");
+                  },
+                  child: Icon(Icons.add),
+                ),
+              );
+            
+        });
       }
     );
   }
@@ -75,7 +60,7 @@ class MainPage extends StatelessWidget {
         IconButton(
           icon: Icon(Icons.search),
           onPressed: () {
-            mainPageController.inSearching.value = true;
+            appController.inSearching.value = true;
           },
         ),
         _filterWidget(context)
@@ -89,23 +74,27 @@ class MainPage extends StatelessWidget {
       leading: IconButton(
         icon: Icon(Icons.arrow_back),
         onPressed: () {
-          mainPageController.inSearching.value = false;
+          appController.inSearching.value = false;
+          appController.loadNewPage();
         },
       ),
       title: TextField(
         autofocus: true,
-        onChanged: (text){
+        onChanged: (text) {
           searchText = text;
         },
-        onSubmitted: (text){
-          mainPageController.searchText.value = searchText;
+        onSubmitted: (text) {
+          appController.searchText.value = searchText;
+          appController.loadNewPage();
+          FocusScope.of(context).unfocus();
         },
       ),
       actions: [
         IconButton(
           icon: Icon(Icons.search),
           onPressed: () {
-            mainPageController.searchText.value = searchText;
+            appController.searchText.value = searchText;
+            appController.loadNewPage();
             FocusScope.of(context).unfocus();
           },
         ),
@@ -114,17 +103,15 @@ class MainPage extends StatelessWidget {
     );
   }
 
-  Widget _filterWidget(context){
+  Widget _filterWidget(context) {
     return IconButton(
-      icon: Icon(Icons.filter_list),
-      onPressed: (){
-        showDialog(
-          context: context,
-          builder: (BuildContext context){
-            return SortAlert();
-          }
-        );
-      }
-    );
+        icon: Icon(Icons.filter_list),
+        onPressed: () {
+          showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return SortAlert();
+              });
+        });
   }
 }
