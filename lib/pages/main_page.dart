@@ -5,7 +5,7 @@ import 'package:space_x/alerts/sort_alert.dart';
 import 'package:space_x/controllers/app_controller.dart';
 import 'package:space_x/elements/launch_view_list.dart';
 import 'package:space_x/requests/api_requests.dart';
-import 'package:space_x/managers/storage_manager.dart';
+import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 
 // ignore: must_be_immutable
 class MainPage extends StatelessWidget {
@@ -14,6 +14,7 @@ class MainPage extends StatelessWidget {
   MainPage(this.title);
 
   AppController appController = Get.put(AppController());
+  SliderController sliderController = Get.put(SliderController());
 
   SpaceXRequest request = SpaceXRequest();
 
@@ -28,13 +29,70 @@ class MainPage extends StatelessWidget {
                   alignment: Alignment.topCenter,
                   child: LaunchViewList(),
                 ),
-                floatingActionButton: FloatingActionButton(
-                  onPressed: () {
-                    //SpaceXRequest().searchRequest("crs 20");
-                    controller.loadNextPage();
-                    print("loaded next page");
-                  },
-                  child: Icon(Icons.add),
+                bottomNavigationBar: Container(
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    borderRadius: BorderRadius.only(topLeft: Radius.circular(30.0), topRight: Radius.circular(30.0))
+                  ),
+                  child: Center(
+                    child: InkWell(
+                      child: Icon(Icons.apps),
+                      onTap: (){
+                        sliderController.sliderStartValue.value = appController.startFilterYear.value.toDouble();
+                        sliderController.sliderEndValue.value = appController.endFilterYear.value.toDouble();
+                        showAdaptiveActionSheet(
+                          context: context,
+                          title: const Text(
+                            'Filter by launch year...',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold
+                            ),
+                          ),
+                          actions: <BottomSheetAction>[
+                              BottomSheetAction(title: GetX<SliderController>(
+                                builder: (_controller) {
+                                  return Row(
+                                    children: [
+                                      Text(_controller.sliderStartValue.value.toInt().toString()),
+                                      Expanded(
+                                        child: SliderTheme(
+                                          data: SliderThemeData(
+                                            showValueIndicator: ShowValueIndicator.never
+                                          ),
+                                          child: RangeSlider(
+                                            values: RangeValues(_controller.sliderStartValue.value, _controller.sliderEndValue.value),
+                                            max: DateTime.now().year.toDouble(),
+                                            min: 2006.0,
+                                            divisions: DateTime.now().year - 2006,
+                                            labels: RangeLabels(_controller.sliderStartValue.value.toInt().toString(), _controller.sliderEndValue.value.toInt().toString()),
+                                            onChanged: (val){
+                                              _controller.sliderStartValue.value = val.start;
+                                              _controller.sliderEndValue.value = val.end;
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                      Text(_controller.sliderEndValue.value.toInt().toString()),
+                                    ],
+                                  );
+                                }
+                              ), onPressed: (){}),
+                          ],
+                          cancelAction: CancelAction(
+                            title: Text('Save'),
+                            onPressed: (){
+                              controller.startFilterYear.value = sliderController.sliderStartValue.value.toInt();
+                              controller.endFilterYear.value = sliderController.sliderEndValue.value.toInt();
+                              controller.loadNewPage();
+                              Navigator.of(context).pop();
+                            }
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                 ),
               );
             
@@ -115,3 +173,11 @@ class MainPage extends StatelessWidget {
         });
   }
 }
+
+class SliderController extends GetxController{
+
+  RxDouble sliderStartValue = 0.0.obs;
+  RxDouble sliderEndValue = 0.0.obs;
+  
+}
+

@@ -11,21 +11,27 @@ class AppController extends GetxController {
   RxBool inSearching = false.obs;
   RxString searchText = "".obs;
 
-  String sortDirection = "asc";
+  String sortDirection = "desc";
   String sortParameter = "flight_number";
 
   int limitItemCount = GetStorage().read("item_limit").toInt();
 
   RxInt selectedLimit = RxInt(GetStorage().read("item_limit").toInt());
-  RxString selectedSortDirection = "asc".obs;
+  RxString selectedSortDirection = "desc".obs;
   RxString selectedSortParameter = "flight_number".obs;
 
   bool isLoadingNew = true;
   bool isLoadingNext = false;
 
   int loadedPageIndex = 0;
+  bool hasNextPage = true;
+
+  RxInt startFilterYear = 2006.obs;
+  RxInt endFilterYear = (DateTime.now().year).obs;
 
   List<Widget> data = [];
+
+  SpaceXRequest requestManager = SpaceXRequest();
 
   void doUpdate() {
     this.update();
@@ -33,21 +39,28 @@ class AppController extends GetxController {
 
   Future<List<Launch>> fetchData(int pageNumber) async {
     var fetchResponse =
-        await SpaceXRequest().basicRequest(pageNumber, limitItemCount, sortParameter, sortDirection, inSearching.value, searchText.value);
+        await requestManager.basicRequest(pageNumber, limitItemCount, sortParameter, sortDirection, inSearching.value, searchText.value, startFilterYear.value, endFilterYear.value);
+    if(fetchResponse == null)
+      return [];
+
     if (fetchResponse.statusCode == 200) {
       List<Launch> launchTempList = [];
-      var results = jsonDecode(fetchResponse.body)["docs"];
+      var results = jsonDecode(fetchResponse.body);
+      hasNextPage = results['hasNextPage'];
 
-      for (var result in results) {
+      for (var result in results["docs"]) {
         launchTempList.add(Launch.fromJson(result));
       }
 
       return launchTempList;
     }
+    hasNextPage = false;
     return [];
   }
 
   void loadNextPage() async{
+    if(!hasNextPage)
+      return;
     isLoadingNext = true;
     doUpdate();
     loadedPageIndex++;

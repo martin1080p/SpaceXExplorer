@@ -33,38 +33,43 @@ class _LaunchViewListState extends State<LaunchViewList> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      controller: scrollController,
-      child: GetBuilder<AppController>(builder: (controller) {
-        return Container(
-          child: controller.isLoadingNew ?
-            Align(
-              alignment: Alignment.topCenter,
-              child: LinearProgressIndicator(),
-            ) :
-            Column(
-              children: [
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: ClampingScrollPhysics(),
-                  itemCount: controller.data.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return controller.data[index];
-                  },
+    return OrientationBuilder(
+      builder: (context, orientation) {
+        appController.loadNewPage();
+        return SingleChildScrollView(
+          controller: scrollController,
+          child: GetBuilder<AppController>(builder: (controller) {
+            return Container(
+              child: controller.isLoadingNew ?
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: LinearProgressIndicator(),
+                ) :
+                Column(
+                  children: [
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: ClampingScrollPhysics(),
+                      itemCount: controller.data.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return controller.data[index];
+                      },
+                    ),
+                    SizedBox(
+                      height: 20,
+                      child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: controller.isLoadingNext ?
+                        LinearProgressIndicator() : 
+                        Container(),
+                      )
+                    )
+                  ],
                 ),
-                SizedBox(
-                  height: 20,
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: controller.isLoadingNext ?
-                    LinearProgressIndicator() : 
-                    Container(),
-                  )
-                )
-              ],
-            ),
+            );
+          }),
         );
-      }),
+      }
     );
   }
 }

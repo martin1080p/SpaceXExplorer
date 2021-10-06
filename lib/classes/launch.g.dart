@@ -13,8 +13,10 @@ Launch _$LaunchFromJson(Map<String, dynamic> json) => Launch(
       dateUtc: json['date_utc'] == null
           ? null
           : DateTime.parse(json['date_utc'] as String),
-      image: json['links']['flickr']['original'] as List<dynamic>?,
-      badge: json['links']['patch']['small'] as String?
+      image: json['links']['flickr']['original'] as List<dynamic>,
+      badge: json['links']['patch']['small'] as String?,
+      success: json['success'] as bool?,
+      cores: json['cores'] as List<dynamic>?,
     );
 
 Map<String, dynamic> _$LaunchToJson(Launch instance) => <String, dynamic>{
