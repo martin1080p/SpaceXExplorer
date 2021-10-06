@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:space_x/classes/launch.dart';
-import 'package:space_x/elements/launch_view_list.dart';
 import 'package:space_x/requests/api_requests.dart';
 
 class AppController extends GetxController {
@@ -38,10 +37,9 @@ class AppController extends GetxController {
   }
 
   Future<List<Launch>> fetchData(int pageNumber) async {
-    var fetchResponse =
-        await requestManager.basicRequest(pageNumber, limitItemCount, sortParameter, sortDirection, inSearching.value, searchText.value, startFilterYear.value, endFilterYear.value);
-    if(fetchResponse == null)
-      return [];
+    var fetchResponse = await requestManager.basicRequest(pageNumber, limitItemCount, sortParameter, sortDirection, inSearching.value,
+        searchText.value, startFilterYear.value, endFilterYear.value);
+    if (fetchResponse == null) return [];
 
     if (fetchResponse.statusCode == 200) {
       List<Launch> launchTempList = [];
@@ -58,9 +56,8 @@ class AppController extends GetxController {
     return [];
   }
 
-  void loadNextPage() async{
-    if(!hasNextPage)
-      return;
+  void loadNextPage() async {
+    if (!hasNextPage) return;
     isLoadingNext = true;
     doUpdate();
     loadedPageIndex++;
@@ -69,7 +66,7 @@ class AppController extends GetxController {
     doUpdate();
   }
 
-  void loadNewPage() async{
+  void loadNewPage() async {
     isLoadingNew = true;
     loadedPageIndex = 1;
     doUpdate();

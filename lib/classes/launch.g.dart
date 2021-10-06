@@ -10,9 +10,7 @@ Launch _$LaunchFromJson(Map<String, dynamic> json) => Launch(
       flightNumber: json['flight_number'] as int,
       name: json['name'] as String?,
       details: json['details'] as String?,
-      dateUtc: json['date_utc'] == null
-          ? null
-          : DateTime.parse(json['date_utc'] as String),
+      dateUtc: json['date_utc'] == null ? null : DateTime.parse(json['date_utc'] as String),
       image: json['links']['flickr']['original'] as List<dynamic>,
       badge: json['links']['patch']['small'] as String?,
       success: json['success'] as bool?,

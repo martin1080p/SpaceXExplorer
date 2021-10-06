@@ -26,7 +26,7 @@ class SettingsAlert extends StatelessWidget {
                     IconButton(
                       icon: Icon(Icons.remove),
                       onPressed: () {
-                        if (controller.selectedLimit.value > 7) controller.selectedLimit--;
+                        if (controller.selectedLimit.value > 1) controller.selectedLimit--;
                       },
                     ),
                     Text(controller.selectedLimit.toString()),

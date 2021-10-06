@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
 class SpaceXRequest {
@@ -12,27 +11,19 @@ class SpaceXRequest {
 
   var client = http.Client();
 
-  basicRequest(int pageNum, int limit, String sortParameter, String sortDirection, bool isSearch, String searchQuery, int yearStart, int yearEnd) async {
-    
+  basicRequest(int pageNum, int limit, String sortParameter, String sortDirection, bool isSearch, String searchQuery, int yearStart,
+      int yearEnd) async {
     yearEnd += 1;
 
     var query = !isSearch
         ? {
             'upcoming': false,
-            "date_utc": {
-              "\$gte": yearStart.toString(),
-              "\$lte": yearEnd.toString()
-            }
+            "date_utc": {"\$gte": yearStart.toString(), "\$lte": yearEnd.toString()}
           }
         : {
             'upcoming': false,
-            '\$text': {
-              '\$search': searchQuery
-            },
-            "date_utc": {
-              "\$gte": yearStart.toString(),
-              "\$lte": yearEnd.toString()
-            }
+            '\$text': {'\$search': searchQuery},
+            "date_utc": {"\$gte": yearStart.toString(), "\$lte": yearEnd.toString()}
           };
 
     Map<String, dynamic> requestBody = {
@@ -44,16 +35,16 @@ class SpaceXRequest {
       }
     };
 
-      try {
-        var response = await client.post(baseUrl, headers: headers, body: jsonEncode(requestBody));
-        if (response.statusCode != 200) throw HttpException('${response.statusCode}');
-        return response;
-      } on SocketException {
-        print('No Internet connection');
-      } on HttpException {
-        print("Couldn't find the post");
-      } on FormatException {
-        print("Bad response format");
-      }
+    try {
+      var response = await client.post(baseUrl, headers: headers, body: jsonEncode(requestBody));
+      if (response.statusCode != 200) throw HttpException('${response.statusCode}');
+      return response;
+    } on SocketException {
+      print('No Internet connection');
+    } on HttpException {
+      print("Couldn't find the post");
+    } on FormatException {
+      print("Bad response format");
+    }
   }
 }
